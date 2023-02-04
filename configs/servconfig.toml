@@ -1,0 +1,5 @@
+bind_addr = ":4444"
+log_level = "error"
+
+[database]
+database_url = "user=postgres password=IrzsmYTa4X dbname=postgres sslmode=disable"

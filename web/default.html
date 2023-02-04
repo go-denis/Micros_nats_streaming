@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Заказы</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  </head>
+  <body>
+    
+
+    <div class="container mt-3">
+        <h1>Заказы для вас</h1>
+        <div class="row justify-content-md-center">
+    <div class="input-group mb-3">
+        <input type="search" id="search" class="form-control" placeholder="Поиск заказ" aria-label="Поиск заказ" aria-describedby="button-addon2">
+        <button class="btn btn-outline-secondary" type="button" onclick="submit()" id="button-addon2">Найти</button>
+      </div>
+    </div>
+</div>
+
+<div class="container mt-3">
+    <div class="row justify-content-md-center">
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">UID Заказа</th>
+            <th scope="col">Трек номер</th>
+            <th scope="col">Запись</th>
+            <th scope="col">Локация</th>
+            <th scope="col">Внутренняя подпись</th>
+            <th scope="col">Идентификатор клиента</th>
+            <th scope="col">Сервис доставки</th>
+            <th scope="col">Ключ-осколок</th>
+            <th scope="col">SmID</th>
+            <th scope="col">Дата создания</th>
+            <th scope="col">OofShard</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">1</th>
+            <th scope="col">{{ .OrderUID}}</th>
+            <th scope="col">{{ .TrackNumber}}</th>
+            <th scope="col">{{ .Entry}}</th>
+            <th scope="col">{{ .Locale}}</th>
+            <th scope="col">{{ .InternalSignature}}</th>
+            <th scope="col">{{ .CustomerID}}</th>
+            <th scope="col">{{ .DeliveryService}}</th>
+            <th scope="col">{{ .Shardkey}}</th>
+            <th scope="col">{{ .SmID}}</th>
+            <th scope="col">{{ .DateCreated}}</th>
+            <th scope="col">{{ .OofShard}}</th>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+</div>
+
+    <script >
+    function submit() {
+        let searchValue = document.getElementById('search').value;
+        if (searchValue == "") {
+            alert("Введите id Заказа");
+        } else {
+            window.location = "http://localhost:8080/orders/" + searchValue
+        }
+    }
+
+    </script>
+  </body>
+</html>
