@@ -41,9 +41,9 @@ func New(configserv *ConfigServ) *APIServer {
 	}
 	s.configRouter()    //Запуск маршрутов
 	s.configureLogger() //Запуск логов
-	s.ConfigDatabase()  //Запуск базы
-	s.ConfigCache()     //Загрузка кеша
-	s.ConfigNats()      //Запуск натс стриминг
+	//s.ConfigDatabase()  //Запуск базы
+	//s.ConfigCache()     //Загрузка кеша
+	//s.ConfigNats()      //Запуск натс стриминг
 	return s
 }
 
@@ -57,26 +57,26 @@ func (s *APIServer) Start() {
 	if err := s.configureLogger(); err != nil {
 		log.Printf("Ошибка конфигуранции логов %v", err)
 	}
-	/*
-		//Запуск конфигурации БД
-		if err := s.ConfigDatabase(); err != nil {
-			log.Printf("Ошибка конфигурации БД %v", err)
-		}
-		//Инициализация кеша
-		if err := s.ConfigCache(); err != nil {
-			log.Printf("Ошибка конфигурации кеша %v", err)
-		}
 
-		if err := s.ConfigNats(); err != nil {
-			log.Printf("Ошибка настс %v", err)
-		}
-	*/
+	//Запуск конфигурации БД
+	if err := s.ConfigDatabase(); err != nil {
+		log.Printf("Ошибка конфигурации БД %v", err)
+	}
+	//Инициализация кеша
+	if err := s.ConfigCache(); err != nil {
+		log.Printf("Ошибка конфигурации кеша %v", err)
+	}
+
+	if err := s.ConfigNats(); err != nil {
+		log.Printf("Ошибка настс %v", err)
+	}
+
 	go func() {
 		defer s.httpServerExitDone.Done() // let main know we are done cleaning up
 
 		if err := http.ListenAndServe(s.configserv.BindAddr, s.router); err != http.ErrServerClosed {
 			s.logger.Info("Сервер стартует, все прошло отлично!") //Если все ок, оповещаем, что все ОК
-			//return
+			return
 		}
 
 	}()
@@ -124,9 +124,6 @@ func (s *APIServer) ConfigNats() error {
 
 	//Новое подключение
 	sn := transport.NewNatsHandler(s.database)
-	if err := sn.Connect(); err != nil {
-		return err
-	}
 	//Записываем в переменную natsStreaming
 	s.natsStreaming = sn
 	return nil
@@ -159,6 +156,7 @@ func (s *APIServer) orderCont(next http.Handler) http.Handler {
 }
 
 func (s *APIServer) Exit() {
+	//serv := &APIServer{}
 	// По нажатию CTRL-C
 	// Запуск очистки
 	signalChan := make(chan os.Signal, 1)
@@ -169,11 +167,18 @@ func (s *APIServer) Exit() {
 
 		for range signalChan {
 			fmt.Printf("\nПолучено прерывание, отмена подписки и закрытие соединения...\n\n")
-			s.cache.Finish()         //Очистка кеша
+			s.cache.Finish() //Очистка кеша
+			//transport.Finish()
 			s.natsStreaming.Finish() //Завершение работы NATS-Streaming
-			s.ShutdownServer()       //Корректное завершение работы сервера
+			//s.ShutdownServer()       //Корректное завершение работы сервера
+			//Завершение работы сервера
+			log.Printf("завершение работы сервера...")
+			s.httpServerExitDone.Wait()
+			log.Println("Сервер завершил свою работу!")
+			close(signalChan) //Закрываем входной канал, для выхода из цикла
 			idleConnsClosed <- true
 		}
+
 	}()
 	<-idleConnsClosed
 }
@@ -181,6 +186,8 @@ func (s *APIServer) Exit() {
 // Корректное завершение работы
 func (s *APIServer) ShutdownServer() {
 	log.Printf("завершение работы сервера...")
+
 	s.httpServerExitDone.Wait()
+
 	log.Println("Сервер завершил свою работу!")
 }

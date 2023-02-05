@@ -82,6 +82,8 @@ func (nh *NatsHandler) Connect() error {
 
 // Завершение работы с NATS
 func (nh *NatsHandler) Finish() {
+	//nh := NatsHandler{}
+
 	if !nh.err {
 		log.Printf("%s: Nats завершает свою работу...", nh.name)
 		nh.getter.UnGetter()
