@@ -8,6 +8,9 @@
 Для работы с http был выбран https://github.com/gorilla/mux
 Для тестов использовалась библиотека github.com/stretchr/testify
 
+Сервис берет сообщения в формате json из папки Micros_nats_streaming\internal\transport\data
+P.S Директории созданные внутри данной папки не будут считываться :)
+
 Сервис реализует:
 - Подключение и подписка на канал в Nats-streaming
 - Сохранение полученных данных в Postgres
@@ -21,7 +24,8 @@
 
 Работа программы терминал:
 
-![image](https://user-images.githubusercontent.com/97671717/216770548-0b45d79c-e908-4912-84f4-1a7b14ef85a3.png)
+![изображение](https://user-images.githubusercontent.com/97671717/216824297-c3a5bf58-bbfd-450f-859b-b4230b48d25d.png)
+
 
 Работа фронденд программы:
 
