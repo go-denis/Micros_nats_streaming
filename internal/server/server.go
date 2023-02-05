@@ -18,11 +18,10 @@ import (
 
 // АПИ Сервер
 type APIServer struct {
-	configserv *ConfigServ    //Указатель на структуру ConfigServ
-	logger     *logrus.Logger //Логи
-	router     *mux.Router    //Маршрутизатор
-	database   *database.DB   //Указатель на структуру DB
-
+	configserv         *ConfigServ            //Указатель на структуру ConfigServ
+	logger             *logrus.Logger         //Логи
+	router             *mux.Router            //Маршрутизатор
+	database           *database.DB           //Указатель на структуру DB
 	cache              *database.Cache        //Указатель на кеш в структуре базы данных
 	natsStreaming      *transport.NatsHandler //Указатель nats
 	httpServerExitDone *sync.WaitGroup        //Для грамотного завершения работы сервера
@@ -40,40 +39,48 @@ func New(configserv *ConfigServ) *APIServer {
 		logger:     logrus.New(),    //Логи
 		router:     mux.NewRouter(), //Новый маршрут
 	}
-	s.configRouter()
-	s.configureLogger()
-	s.ConfigDatabase()
-	s.ConfigCache()
-	s.ConfigNats()
+	s.configRouter()    //Запуск маршрутов
+	s.configureLogger() //Запуск логов
+	s.ConfigDatabase()  //Запуск базы
+	s.ConfigCache()     //Загрузка кеша
+	s.ConfigNats()      //Запуск натс стриминг
 	return s
 }
 
 // Метод запуска сервера, где также происходит соединение с бд
-func (s *APIServer) Start() error {
+func (s *APIServer) Start() {
 
 	s.httpServerExitDone = &sync.WaitGroup{}
 	s.httpServerExitDone.Add(1)
-	/*
-		//Теперь, сначала проверяем не произошло ли какой-то беды
-		if err := s.configureLogger(); err != nil {
-			return err
-		}
 
+	//Теперь, сначала проверяем не произошло ли какой-то беды
+	if err := s.configureLogger(); err != nil {
+		log.Printf("Ошибка конфигуранции логов %v", err)
+	}
+	/*
 		//Запуск конфигурации БД
 		if err := s.ConfigDatabase(); err != nil {
-			return err
+			log.Printf("Ошибка конфигурации БД %v", err)
 		}
 		//Инициализация кеша
 		if err := s.ConfigCache(); err != nil {
-			return err
+			log.Printf("Ошибка конфигурации кеша %v", err)
 		}
 
 		if err := s.ConfigNats(); err != nil {
 			log.Printf("Ошибка настс %v", err)
 		}
 	*/
-	s.logger.Info("Сервер стартует, все прошло отлично!") //Если все ок, оповещаем, что все ОК
-	return http.ListenAndServe(s.configserv.BindAddr, s.router)
+	go func() {
+		defer s.httpServerExitDone.Done() // let main know we are done cleaning up
+
+		if err := http.ListenAndServe(s.configserv.BindAddr, s.router); err != http.ErrServerClosed {
+			s.logger.Info("Сервер стартует, все прошло отлично!") //Если все ок, оповещаем, что все ОК
+			//return
+		}
+
+	}()
+
 }
 
 // Для конфигурации логгера
@@ -127,7 +134,7 @@ func (s *APIServer) ConfigNats() error {
 
 // Что-то вроде мидлвар, здесь мы сохраняем Заказ в контекст
 func (s *APIServer) orderCont(next http.Handler) http.Handler {
-
+	//s.Exit()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//Записываем переменные маршрута для текущего запроса, если таковые имеются.
 		order_id_string := mux.Vars(r)["orderID"] // SetURLVars(r, "orderID")
@@ -151,27 +158,29 @@ func (s *APIServer) orderCont(next http.Handler) http.Handler {
 	})
 }
 
-// Корректное завершение работы
-func (s *APIServer) ShutdownServer() {
-	log.Printf("завершение работы сервера...")
-	s.httpServerExitDone.Wait()
-	log.Println("Сервер завершил свою работу!")
-}
-
-func (serv *APIServer) Exit() {
+func (s *APIServer) Exit() {
 	// По нажатию CTRL-C
 	// Запуск очистки
 	signalChan := make(chan os.Signal, 1)
 	idleConnsClosed := make(chan bool) //Флаг хорошего завершения работы
 	signal.Notify(signalChan, os.Interrupt)
+	//Отслеживаем действие горутиной после запуска сервера
 	go func() {
+
 		for range signalChan {
 			fmt.Printf("\nПолучено прерывание, отмена подписки и закрытие соединения...\n\n")
-			serv.cache.Finish()         //Очистка кеша
-			serv.natsStreaming.Finish() //Завершение работы NATS-Streaming
-			serv.ShutdownServer()       //Корректное завершение работы сервера
+			s.cache.Finish()         //Очистка кеша
+			s.natsStreaming.Finish() //Завершение работы NATS-Streaming
+			s.ShutdownServer()       //Корректное завершение работы сервера
 			idleConnsClosed <- true
 		}
 	}()
 	<-idleConnsClosed
+}
+
+// Корректное завершение работы
+func (s *APIServer) ShutdownServer() {
+	log.Printf("завершение работы сервера...")
+	s.httpServerExitDone.Wait()
+	log.Println("Сервер завершил свою работу!")
 }

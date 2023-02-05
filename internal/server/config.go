@@ -21,6 +21,7 @@ type ConfigServ struct {
 
 // Для удобства, отдает инициализированный конфиг с дефольтыми параметрами, которые нас устраивают
 func NewServConfig() *ConfigServ {
+
 	return &ConfigServ{
 		BindAddr: os.Getenv("DB_BINN_ADDR"),
 		LogLevel: os.Getenv("DB_LOG_LEVEL"),

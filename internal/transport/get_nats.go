@@ -74,9 +74,7 @@ func (g *Getter) messageHandler(data []byte) bool {
 	}
 	log.Printf("%s: Распарил json: %v\n", g.name, order)
 
-	_, err = g.
-		dbO.
-		InsertOrder(order) //Записываем заказ в базу
+	_, err = g.dbO.InsertOrder(order) //Записываем заказ в базу
 	//Проверка на корректность записи в базу
 	if err != nil {
 		log.Printf("%s: ошибка, повторите попытку, ну удается добавить заказ: %v\n", g.name, err)

@@ -19,7 +19,7 @@ func (r *DB) InsertOrder(o models.Orders) (int64, error) {
 	var lastInsertId int64 = 1
 
 	var itemsIds []int64 = []int64{} //id Items Для загрузки в Заказы
-	//var dbSql *DB
+
 	//Запуск транзакции
 	transact, err := r.db.BeginTx(context.Background(), nil)
 	if err != nil {

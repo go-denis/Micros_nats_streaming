@@ -7,13 +7,7 @@ import (
 	"micros/internal/server"
 
 	"github.com/BurntSushi/toml"
-	//"honnef.co/go/tools/config"
-	/*
-		"micros/internal/config"
-		"micros/internal/database/database"
-		"micros/internal/server"
-		"micros/internal/transport/route"
-	*/)
+)
 
 var (
 	configServPath string //Глобальная переменная, здесь мы будем хранить конфигурацию
@@ -46,11 +40,6 @@ func main() {
 	//Инициализация натс стриминг(брокер сообщений)
 
 	//Проверка на ощшибки при запуске
-	if err := serv.Start(); err != nil {
-		log.Fatal(err)
-	}
-
-	//Завершаем работу
+	serv.Start()
 	serv.Exit()
-
 }
