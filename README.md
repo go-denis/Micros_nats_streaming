@@ -1,3 +1,6 @@
+# Micros_nats_streaming
+Микросервис
+
 # Golang + Nats-straming + Postgress 
 
 Логированеи ошибок осуществялется с помощью пакета https://github.com/sirupsen/logrus
@@ -13,6 +16,16 @@
 - Сделан простейший интерфейс отображения полученных данных
 
 Не получилось решить проблему с парсингом toml, по какой-то причине, не парсятся данные, не смог выяснить
+Схема базы данныйх:
+![image](https://user-images.githubusercontent.com/97671717/216770355-dad83f7d-bc2d-46b0-8013-d52daec76d41.png)
+
+Работа программы терминал:
+
+![image](https://user-images.githubusercontent.com/97671717/216770548-0b45d79c-e908-4912-84f4-1a7b14ef85a3.png)
+
+Работа фронденд программы:
+
+![image](https://user-images.githubusercontent.com/97671717/216770468-a4487f96-9c31-4312-ae42-435ec3998c96.png)
 
 ## Требования
 Установите компилятор для Golang 
@@ -26,7 +39,7 @@ docker run -d --link nats-main nats-streaming -store file -dir datastore -ns nat
 
 Запусить командой go run `.\cmd\app\main.go`
 
-Настроить под себя в файле `\config\config.go`
+Настроить под себя в файле `internal\config\config.go`
 
 ### Завершение работы
 Для завешения работы просто нажмите `Ctrl+C` в консоли
